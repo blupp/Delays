@@ -1,35 +1,77 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    tools:context="com.bjorkelid.delays.StatsActivity"
-    android:background="#51B4AE">
+    tools:context="com.bjorkelid.delays.StatsActivity">
+
+<RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        android:background="#51B4AE">
+
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Delay statistics"
+        android:text="Week statistics"
         android:id="@+id/textView"
         android:textSize="22sp"
         android:textColor="#ffffffff"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/delaysStatsTextView"
+    <org.eazegraph.lib.charts.ValueLineChart
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/cubiclinechartWeek"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        app:egUseCubic="true"
+        app:egUseOverlapFill="true"
+        app:egCurveSmoothness="0.2"
+        app:egLegendHeight="40dp"
+        app:egShowStandardValue="false"
+        app:egLegendColor="#FFF"
+        app:egIndicatorLineColor="#CCFFFFFF"
+        app:egIndicatorTextColor="#FFFFFF"
+        android:layout_marginTop="34dp"
         android:layout_below="@+id/textView"
         android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Month statistics"
+        android:id="@+id/textView2"
+        android:textSize="22sp"
+        android:textColor="#ffffffff"
+        android:layout_below="@+id/cubiclinechartWeek"
+        android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
+        android:layout_marginTop="33dp" />
+
+    <org.eazegraph.lib.charts.ValueLineChart
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/cubiclinechartMonth"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        app:egUseCubic="true"
+        app:egUseOverlapFill="true"
+        app:egCurveSmoothness="0.4"
+        app:egLegendHeight="40dp"
+        app:egShowStandardValue="true"
+        app:egLegendColor="#FFF"
+        app:egIndicatorLineColor="#FFF"
+        app:egIndicatorTextColor="#FFF"
         android:layout_marginTop="34dp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:textColor="#FFF"
-        android:textSize="20sp" />
-</RelativeLayout>
+        android:layout_below="@+id/textView2"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+        </RelativeLayout>
+ </ScrollView>
+
