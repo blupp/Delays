@@ -22,6 +22,8 @@ import java.text.ParseException;
 
 public class Delays extends Activity {
 
+    // TABS
+
     public static final String TAG = Delays.class.getSimpleName();
     public EditText minutesEditText;
     public Button saveButton;
