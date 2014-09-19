@@ -27,6 +27,15 @@ import java.util.Locale;
 import java.util.Map;
 
 
+// Hämta all data jag behöver för att visa vyn
+
+// Plocka ut det jag behöver för att visa veckan
+
+// Gruppera och sortera dagarna på format: mån - sön med start [7 dagar sedan] och slut [idag]
+
+// Plotta på graf
+
+
 public class StatsActivity extends Activity {
 
     public static final String TAG = StatsActivity.class.getSimpleName();
@@ -37,10 +46,159 @@ public class StatsActivity extends Activity {
         setContentView(R.layout.activity_stats);
 
 
-
-        fetchWeekStats();
-        fetchMonthStats();
+        fetchDelayDataFromParse();
+        //fetchWeekStats();
+        //fetchMonthStats();
     }
+
+    public void fetchDelayDataFromParse() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        int currentDay = calendar.get(Calendar.DAY_OF_YEAR); // 252
+
+        calendar.add(Calendar.DAY_OF_YEAR, -30);
+        Date timeSpan = calendar.getTime();
+
+
+
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("Delay");
+        query.whereGreaterThan("createdAt", timeSpan);
+        query.findInBackground(new FindCallback<ParseObject>() {
+            public void done(List<ParseObject> delays, ParseException e) {
+
+                if(e == null) {
+                    // Success!
+                    Log.d(TAG, "Retrieved " + delays.size() + " delays");
+                    drawWeekStats(delays);
+                    drawMonthStats(delays);
+                } else {
+                    // Error!
+                    Log.d(TAG, "Error: " + e.getMessage());
+                }
+
+            }
+        });
+    }
+
+    public void drawWeekStats(List<ParseObject> delays) {
+        int[] groupedDelayValues = new int[7];
+        String[] dayNames = new String[7];
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+
+        for(int i=0;i<7;i++) {
+            dayNames[6-i] = calendar.getDisplayName((Calendar.DAY_OF_WEEK), Calendar.SHORT, Locale.getDefault());
+            calendar.add(Calendar.DAY_OF_YEAR, -1);
+        }
+
+
+        //calendar.add(Calendar.DAY_OF_YEAR, -7);
+        Date oneWeekAgo = calendar.getTime();
+
+
+        for (int i=0; i<delays.size(); i++) {
+            ParseObject delayObj = delays.get(i);
+
+            // Plocka ut det jag behöver för att visa veckan
+            if(delayObj.getCreatedAt().getTime() > oneWeekAgo.getTime()) {
+
+                calendar.setTime(delayObj.getCreatedAt());
+                int day = calendar.get(Calendar.DAY_OF_WEEK);
+
+                // Gruppera och sortera dagarna på format: mån - sön med start [7 dagar sedan] och slut [idag]
+                groupedDelayValues[day] += delayObj.getInt("delay");
+            }
+        }
+
+        // Plotta på graf
+
+        ValueLineChart weekChart = (ValueLineChart) findViewById(R.id.cubiclinechartWeek);
+
+        // Week
+        ValueLineSeries weekSeries = new ValueLineSeries();
+        weekSeries.setColor(0xccb7c0c7);
+
+        weekSeries.addPoint(new ValueLinePoint("", 0));
+
+        for(int i=0; i<groupedDelayValues.length;i++) {
+            weekSeries.addPoint(new ValueLinePoint(dayNames[i], groupedDelayValues[i]));
+        }
+
+        weekSeries.addPoint(new ValueLinePoint("", 0));
+
+
+        weekChart.addSeries(weekSeries);
+        weekChart.startAnimation();
+
+    }
+
+
+    public void drawMonthStats(List<ParseObject> delays) {
+
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+
+        int[] groupedDelayValues = new int[30];
+        String[] dayNames = new String[30];
+
+        for(int i=0;i<30;i++) {
+            dayNames[i] = String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
+            calendar.add(Calendar.DAY_OF_YEAR, -1);
+        }
+
+
+        //calendar.add(Calendar.DAY_OF_YEAR, -7);
+        Date oneWeekAgo = calendar.getTime();
+
+
+        for (int i=0; i<delays.size(); i++) {
+            ParseObject delayObj = delays.get(i);
+
+            // Plocka ut det jag behöver för att visa veckan
+            if(delayObj.getCreatedAt().getTime() > oneWeekAgo.getTime()) {
+
+                calendar.setTime(delayObj.getCreatedAt());
+                int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+                // Gruppera och sortera dagarna på format: mån - sön med start [7 dagar sedan] och slut [idag]
+                groupedDelayValues[day] += delayObj.getInt("delay");
+            }
+        }
+
+        // Plotta på graf
+
+        ValueLineChart monthChart = (ValueLineChart) findViewById(R.id.cubiclinechartMonth);
+
+        // Week
+        ValueLineSeries monthSeries = new ValueLineSeries();
+        monthSeries.setColor(0xccb7c0c7);
+
+        monthSeries.addPoint(new ValueLinePoint("", 0));
+
+        for(int i=0; i<groupedDelayValues.length;i++) {
+            monthSeries.addPoint(new ValueLinePoint(dayNames[i], groupedDelayValues[i]));
+        }
+
+        monthSeries.addPoint(new ValueLinePoint("", 0));
+
+
+        monthChart.addSeries(monthSeries);
+        monthChart.startAnimation();
+
+    }
+
+
+
+
+
+    /* ********************** */
+    /* ********************** */
+    /* ********************** */
+    /* ********************** */
+    /* ********************** */
+    /* ********************** */
 
     public void fetchWeekStats() {
         final Calendar calendar = Calendar.getInstance();
