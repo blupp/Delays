@@ -1,13 +1,17 @@
 package com.bjorkelid.delays;
 
+import android.app.ActionBar;
 import android.app.Activity;
+import android.support.v4.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -20,7 +24,9 @@ import com.parse.ParseObject;
 import java.text.ParseException;
 
 
-public class Delays extends Activity {
+public class Delays extends Fragment {
+
+    // TABS
 
     public static final String TAG = Delays.class.getSimpleName();
     public EditText minutesEditText;
@@ -28,13 +34,12 @@ public class Delays extends Activity {
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_delays);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View rootView = inflater.inflate(R.layout.activity_delays, container, false);
 
-        Parse.initialize(this, "N0cQqhZnV5l44nnsayfYuWnajuSDqOcISX7VtT45", "2nFu1jeKocMzUFXWcdsebMOa4QJC4o638VRUl5oU");
-        minutesEditText = (EditText) findViewById(R.id.minutesEditText);
-        saveButton = (Button) findViewById(R.id.saveButton);
+        Parse.initialize(getActivity(), "N0cQqhZnV5l44nnsayfYuWnajuSDqOcISX7VtT45", "2nFu1jeKocMzUFXWcdsebMOa4QJC4o638VRUl5oU");
+        minutesEditText = (EditText) rootView.findViewById(R.id.minutesEditText);
+        saveButton = (Button) rootView.findViewById(R.id.saveButton);
 
 
         View.OnClickListener minutesEditTextListener = new View.OnClickListener() {
@@ -63,6 +68,13 @@ public class Delays extends Activity {
         minutesEditText.setOnClickListener(minutesEditTextListener);
         saveButton.setOnClickListener(saveButtonListener);
 
+        return rootView;
+    }
+
+    @Override
+    public void onStart() {
+        Log.e("FRAG", "onStart called");
+        super.onStart();
     }
 
     public void saveDelay() {
@@ -74,18 +86,21 @@ public class Delays extends Activity {
         }
 
         if(delay > 0) {
-            Toast.makeText(Delays.this, "Delay saved!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), "Delay saved!", Toast.LENGTH_SHORT).show();
             ParseObject delayObject = new ParseObject("Delay");
             delayObject.put("delay", delay);
             delayObject.saveInBackground();
             Log.d(TAG, "Logged " + delay + " minutes delay to Parse.com");
             minutesEditText.setText("");
 
-            Intent showStats = new Intent(this, StatsActivity.class);
-            startActivity(showStats);
+            //Intent showStats = new Intent(this, StatsActivity.class);
+            //startActivity(showStats);
+
+            getActivity().getActionBar().setSelectedNavigationItem(1);
+
 
         } else {
-            Toast.makeText(Delays.this, "Ops! Missing delay", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), "Ops! Missing delay", Toast.LENGTH_SHORT).show();
         }
     }
 }
