@@ -1,10 +1,14 @@
 package com.bjorkelid.delays;
 
 import android.app.Activity;
+import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.parse.FindCallback;
@@ -36,19 +40,26 @@ import java.util.Map;
 // Plotta på graf
 
 
-public class StatsActivity extends Activity {
+public class StatsActivity extends Fragment {
 
     public static final String TAG = StatsActivity.class.getSimpleName();
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_stats);
+    View rootView;
 
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        rootView = inflater.inflate(R.layout.activity_stats, container, false);
 
         fetchDelayDataFromParse();
         //fetchWeekStats();
         //fetchMonthStats();
+
+        return rootView;
+    }
+
+    @Override
+    public void onStart() {
+        Log.e("FRAG", "onStart called from Stats");
+        super.onStart();
     }
 
     public void fetchDelayDataFromParse() {
@@ -60,13 +71,12 @@ public class StatsActivity extends Activity {
         Date timeSpan = calendar.getTime();
 
 
-
         ParseQuery<ParseObject> query = ParseQuery.getQuery("Delay");
         query.whereGreaterThan("createdAt", timeSpan);
         query.findInBackground(new FindCallback<ParseObject>() {
             public void done(List<ParseObject> delays, ParseException e) {
 
-                if(e == null) {
+                if (e == null) {
                     // Success!
                     Log.d(TAG, "Retrieved " + delays.size() + " delays");
                     drawWeekStats(delays);
@@ -87,33 +97,34 @@ public class StatsActivity extends Activity {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
 
-        for(int i=0;i<7;i++) {
-            dayNames[6-i] = calendar.getDisplayName((Calendar.DAY_OF_WEEK), Calendar.SHORT, Locale.getDefault());
+        for (int i = 0; i < 7; i++) {
+            dayNames[6 - i] = calendar.getDisplayName((Calendar.DAY_OF_WEEK), Calendar.SHORT, Locale.getDefault());
             calendar.add(Calendar.DAY_OF_YEAR, -1);
         }
 
 
         //calendar.add(Calendar.DAY_OF_YEAR, -7);
         Date oneWeekAgo = calendar.getTime();
+        //Date oneWeekAgo = new Date(tmp.getYear(), tmp.getMonth(), tmp.getDate());
 
-
-        for (int i=0; i<delays.size(); i++) {
+        for (int i = 0; i < delays.size(); i++) {
             ParseObject delayObj = delays.get(i);
 
             // Plocka ut det jag behöver för att visa veckan
-            if(delayObj.getCreatedAt().getTime() > oneWeekAgo.getTime()) {
+            if (delayObj.getCreatedAt().getTime() > oneWeekAgo.getTime()) {
 
                 calendar.setTime(delayObj.getCreatedAt());
-                int day = calendar.get(Calendar.DAY_OF_WEEK);
-
-                // Gruppera och sortera dagarna på format: mån - sön med start [7 dagar sedan] och slut [idag]
-                groupedDelayValues[day] += delayObj.getInt("delay");
+                int day = calendar.get(Calendar.DAY_OF_WEEK)-1;
+                if(day > 0) {
+                    // Gruppera och sortera dagarna på format: mån - sön med start [7 dagar sedan] och slut [idag]
+                    groupedDelayValues[day] += delayObj.getInt("delay");
+                }
             }
         }
 
         // Plotta på graf
 
-        ValueLineChart weekChart = (ValueLineChart) findViewById(R.id.cubiclinechartWeek);
+        ValueLineChart weekChart = (ValueLineChart) rootView.findViewById(R.id.cubiclinechartWeek);
 
         // Week
         ValueLineSeries weekSeries = new ValueLineSeries();
@@ -121,7 +132,7 @@ public class StatsActivity extends Activity {
 
         weekSeries.addPoint(new ValueLinePoint("", 0));
 
-        for(int i=0; i<groupedDelayValues.length;i++) {
+        for (int i = 0; i < groupedDelayValues.length; i++) {
             weekSeries.addPoint(new ValueLinePoint(dayNames[i], groupedDelayValues[i]));
         }
 
@@ -143,33 +154,31 @@ public class StatsActivity extends Activity {
         int[] groupedDelayValues = new int[30];
         String[] dayNames = new String[30];
 
-        for(int i=0;i<30;i++) {
-            dayNames[i] = String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
+        for (int i = 0; i < 30; i++) {
+            dayNames[i] = String.valueOf(calendar.get(Calendar.DAY_OF_MONTH)) + "/" + String.valueOf(calendar.get(Calendar.MONTH)+1);
             calendar.add(Calendar.DAY_OF_YEAR, -1);
         }
 
-
-        //calendar.add(Calendar.DAY_OF_YEAR, -7);
+        calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_YEAR, -30);
         Date oneWeekAgo = calendar.getTime();
 
 
-        for (int i=0; i<delays.size(); i++) {
+        for (int i = 0; i < delays.size(); i++) {
             ParseObject delayObj = delays.get(i);
 
-            // Plocka ut det jag behöver för att visa veckan
-            if(delayObj.getCreatedAt().getTime() > oneWeekAgo.getTime()) {
+            if (delayObj.getCreatedAt().getTime() > oneWeekAgo.getTime()) {
 
                 calendar.setTime(delayObj.getCreatedAt());
                 int day = calendar.get(Calendar.DAY_OF_MONTH);
 
-                // Gruppera och sortera dagarna på format: mån - sön med start [7 dagar sedan] och slut [idag]
                 groupedDelayValues[day] += delayObj.getInt("delay");
             }
         }
 
         // Plotta på graf
 
-        ValueLineChart monthChart = (ValueLineChart) findViewById(R.id.cubiclinechartMonth);
+        ValueLineChart monthChart = (ValueLineChart) rootView.findViewById(R.id.cubiclinechartMonth);
 
         // Week
         ValueLineSeries monthSeries = new ValueLineSeries();
@@ -177,8 +186,10 @@ public class StatsActivity extends Activity {
 
         monthSeries.addPoint(new ValueLinePoint("", 0));
 
-        for(int i=0; i<groupedDelayValues.length;i++) {
-            monthSeries.addPoint(new ValueLinePoint(dayNames[i], groupedDelayValues[i]));
+        for (int i = 0; i < groupedDelayValues.length; i++) {
+            if(groupedDelayValues[i] > 0) {
+                monthSeries.addPoint(new ValueLinePoint(dayNames[i], groupedDelayValues[i]));
+            }
         }
 
         monthSeries.addPoint(new ValueLinePoint("", 0));
@@ -188,6 +199,7 @@ public class StatsActivity extends Activity {
         monthChart.startAnimation();
 
     }
+}
 
 
 
@@ -199,6 +211,8 @@ public class StatsActivity extends Activity {
     /* ********************** */
     /* ********************** */
     /* ********************** */
+
+    /*
 
     public void fetchWeekStats() {
         final Calendar calendar = Calendar.getInstance();
@@ -338,6 +352,7 @@ public class StatsActivity extends Activity {
     }
 
 }
+*/
 
  /*groupedDelaysMonthMap.put("Jan", 0);
                 groupedDelaysMonthMap.put("Feb", 0);
