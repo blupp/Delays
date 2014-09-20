@@ -1,22 +1,15 @@
 package com.bjorkelid.delays;
 
-import android.app.Activity;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.parse.FindCallback;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
-import com.parse.Parse;
-import com.parse.ParseAnalytics;
-import com.parse.GetCallback;
 import com.parse.ParseException;
 
 import org.eazegraph.lib.charts.ValueLineChart;
@@ -25,10 +18,8 @@ import org.eazegraph.lib.models.ValueLineSeries;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 
 // Hämta all data jag behöver för att visa vyn
